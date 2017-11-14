@@ -1,5 +1,4 @@
-node_modules/
+node_modules/node_modules/
 .git
 .idea
-build/
-!src/client/node_modules/
+node_modules/node_modules/build/
