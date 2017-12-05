@@ -87,7 +87,7 @@ describe(`${FILENAME}`, () => {
         handleHttp({
             url: '/file.test'
         }, mockRes);
-        assert.isTrue(!!~mockRes.body.indexOf('file.test'));
+        assert.isFalse(!!~mockRes.body.indexOf('file.test'));
         next();
     });
     it(`should return 404 if file not found` , next => {
