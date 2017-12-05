@@ -12,5 +12,6 @@ script: npm run test
 before_script:
   - git clone https://github.com/nedzelskiy/examples__deploy-complex-dev-boilerplate.git build
   - eval `grep "^export " ./sh/env.sh`
-after_success:
-  - echo DONE!
+branches:
+  only:
+  - master
