@@ -15,3 +15,17 @@ before_script:
 branches:
   only:
   - master
+before_deploy:
+  - cd ./build
+deploy:
+  provider: heroku
+  api_key: "178faff1-ef74-4810-8675-9b996f1964fc"
+  skip_cleanup: true
+  app: examples-dev-boilerplate
+  on:
+    repo: https://github.com/nedzelskiy/examples__deploy-complex-dev-boilerplate.git
+    branch: master
+  run:
+    - "npm install --production"
+    - "pm2 stop all"
+    - "pm2 start server.js"
