@@ -43,8 +43,6 @@
     "jpegtran-bin": "^3.2.0",
     "js_console_command_executor": "^1.0.9",
     "keypress": "^0.2.1",
-    "md5-file": "^3.2.3",
-    "mime": "^2.0.3",
     "minimist": "^1.2.0",
     "mock-require": "^2.0.2",
     "node-sass": "^4.5.3",
@@ -78,6 +76,8 @@
   },
   "dependencies": {
     "ejs": "^2.5.7",
-    "pm2": "^2.7.2"
+    "pm2": "^2.7.2",
+    "md5-file": "^3.2.3",
+    "mime": "^2.0.3"
   }
 }
