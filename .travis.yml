@@ -20,11 +20,6 @@ before_deploy:
 deploy:
   provider: heroku
   api_key: "178faff1-ef74-4810-8675-9b996f1964fc"
-  skip_cleanup: true
-  app: examples-dev-boilerplate
-  on:
-    repo: nedzelskiy/examples__deploy-complex-dev-boilerplate
-    branch: master
   run:
     - "npm install --production"
     - "pm2 stop all"
