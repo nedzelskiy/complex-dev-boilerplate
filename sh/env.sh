@@ -25,6 +25,6 @@ export CONCURRENTLY_WRAPPER__PORT=6600                                          
 export WATCHER_AND_RUNNER__PORT=6603                                                                              &&
 export WATCHER_AND_RUNNER__WAY_TO_CONFIG='scripts/watcher-and-runner.conf.js'                                     &&
 
-export LOG_FOLDER='log'
+export LOG_FOLDER='logs'
 
 

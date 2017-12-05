@@ -4,5 +4,5 @@ node_modules/
 coverage/
 configs/tsconfig-server.json
 configs/tsconfig-client.json
-log/microservices
+logs/microservices
 build/
