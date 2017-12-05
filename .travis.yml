@@ -20,6 +20,7 @@ before_deploy:
 deploy:
   provider: heroku
   api_key: "178faff1-ef74-4810-8675-9b996f1964fc"
+  app: examples-dev-boilerplate
   run:
     - "npm install --production"
     - "pm2 stop all"
