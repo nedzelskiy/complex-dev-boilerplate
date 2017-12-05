@@ -23,7 +23,7 @@ deploy:
   skip_cleanup: true
   app: examples-dev-boilerplate
   on:
-    repo: https://git.heroku.com/examples-dev-boilerplate.git
+    repo: nedzelskiy/examples__deploy-complex-dev-boilerplate
     branch: master
   run:
     - "npm install --production"
