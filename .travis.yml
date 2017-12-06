@@ -23,5 +23,4 @@ deploy:
   app: examples-dev-boilerplate
   run:
     - "npm install --production"
-    - "pm2 stop all"
-    - "pm2 start server.js"
+    - "npm run prod"
