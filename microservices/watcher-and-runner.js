@@ -69,6 +69,7 @@ try {
             watcherOptions.filters.includeFile = config[url].includeFile;
         }
         if (config[url].runImmediately && typeof config[url].runImmediately === 'function') {
+            config[url].runImmediately.savedUrl = url;
             immediatelyTasks.push(config[url].runImmediately);
         }
         if (!config[url].callbacks.update || typeof config[url].callbacks.update !== 'function' ) {
@@ -98,7 +99,7 @@ try {
     }
     immediatelyTasks.forEach(task => {
         if (typeof task === 'function') {
-            task();
+            task(task.savedUrl);
         }
     });
     sendConsoleText(`started on ${CONSTANTS.WATCHER_AND_RUNNER__PORT}`);

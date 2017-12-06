@@ -277,10 +277,11 @@ const restartConcurrentlyWrapperProcess = (strCommand) => {
     });
 };
 
-const copyPackageJson = (fullNamePath) => {
-    let file = fs.readFileSync(path.normalize(`${ process.env.PWD }/package.json`));
-    fse.outputFileSync(path.normalize(`${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }/package.json`), file);
-    console.log(`${FILENAME}: package.json file copied!`);
+const copyOneFile = (fullNamePathFile, fullPathTo) => {
+    const fileName = path.normalize(fullNamePathFile).split(path.sep).pop();
+    const file = fs.readFileSync(path.normalize(fullNamePathFile));
+    fse.outputFileSync(path.normalize(`${ fullPathTo }/${fileName}`), file);
+    console.log(`${FILENAME}: Copied file ${ fileName } to ${ fullPathTo }`);
 };
 
 const runServerTests = (fullNamePath) => {
@@ -326,12 +327,12 @@ options[`${CONSTANTS.CONFIGS_SERVICES__DIR}/webpack-client.conf.js`] = {
         }
     }
 };
-options[CONSTANTS.SERVER__SRC_FOLDER] = {
+options[`${ process.env.PWD }/${ CONSTANTS.SERVER__SRC_FOLDER }`] = {
     callbacks: {
         update: copyServerFilesFromSrcToBuild,
         remove: deleteFilesInBuildServerFolder
     },
-    runImmediately: copyServerFilesFromSrcToBuild,
+    runImmediately: () => copyServerFilesFromSrcToBuild(),
     filter: function (fullNamePath) {
         try {
             let ext = fullNamePath.split('.').pop().toLowerCase();
@@ -376,10 +377,30 @@ options[CONSTANTS.SERVER__SRC_TEST_FOLDER] = {
 
 options[`${ process.env.PWD }/package.json`] = {
     callbacks: {
-        update: copyPackageJson,
-        remove: copyPackageJson
+        update: (fullNamePath) => {
+            copyOneFile(fullNamePath, `${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }`);
+        },
+        remove: (fullNamePath) => {
+            console.log(`\r\n\r\nAttention file ${fullNamePath} was removed!!`)
+        }
     },
-    runImmediately: copyPackageJson
+    runImmediately: (fullNamePath) => {
+        copyOneFile(fullNamePath, `${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }`);
+    }
+};
+
+options[`${ process.env.PWD }/process.yml`] = {
+    callbacks: {
+        update: (fullNamePath) => {
+            copyOneFile(fullNamePath, `${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }`);
+        },
+        remove: (fullNamePath) => {
+            console.log(`\r\n\r\nAttention file ${fullNamePath} was removed!!`)
+        }
+    },
+    runImmediately: (fullNamePath) => {
+        copyOneFile(fullNamePath, `${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }`);
+    }
 };
 
 

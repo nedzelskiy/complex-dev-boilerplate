@@ -19,7 +19,7 @@ before_deploy:
   - cd ./build
 deploy:
   provider: heroku
-  api_key: "178faff1-ef74-4810-8675-9b996f1964fc"
+  api_key: $KEY
   app: examples-dev-boilerplate
   run:
     - "npm install --production"

@@ -27,7 +27,7 @@ const utils = {
             chalk[color](`${name}:${port}`) +
             chalk[color](`--PID[${process.pid}]`) +
             chalk[textColor](`[${ type }]:`),
-            chalk[textColor](text)
+            chalk[textColor]((type === 'error' || type === 'err') ? JSON.stringify(text, null, 4) : text)
         );
         if (process.env.LOG_FOLDER) {
             let d = (new Date()).toLocaleString("ru", {
