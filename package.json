@@ -8,7 +8,7 @@
     "dev:server": "sh ./sh/server.sh",
     "test": "sh ./sh/tests.sh",
     "coverage": "sh ./sh/coverage.sh",
-    "prod": "pm2 start process.yml"
+    "prod": "sh ./sh/prod.sh"
   },
   "repository": {
     "type": "git",

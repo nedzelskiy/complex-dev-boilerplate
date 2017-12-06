@@ -27,7 +27,7 @@ if (lastCurrentHash === lastRemoteHash) {
     process.exit(0);
 }
 
-let historyMessage = execSync(`git log -1 --pretty=oneline`).toString();
+let historyMessage =  `${ lastCurrentHash.substr(0,6) } ${ execSync(`git log -1 --pretty=%B`).toString() }`;
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && echo ${ (new Date()).getTime() } > version.manifest `);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git add . `);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git commit -m "${ historyMessage }"`);
