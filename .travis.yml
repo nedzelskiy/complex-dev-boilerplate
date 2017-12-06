@@ -10,7 +10,7 @@ install:
   - npm i mock-require
 script: npm run test
 before_script:
-  - git clone https://github.com/nedzelskiy/examples__deploy-complex-dev-boilerplate.git build
+  - git clone $PRODUCTION_REPOSITORY build
   - eval `grep "^export " ./sh/env.sh`
 branches:
   only:
@@ -19,8 +19,8 @@ before_deploy:
   - cd ./build
 deploy:
   provider: heroku
-  api_key: $KEY
-  app: examples-dev-boilerplate
+  api_key: $HEROKU_KEY
+  app: $HEROKU_APP
   run:
     - "npm install --production"
     - "npm run prod"
