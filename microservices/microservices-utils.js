@@ -20,7 +20,7 @@ const utils = {
         let textColor = '',
             type = level || 'info';
 
-        (type === 'info') && (textColor = 'blue');
+        (type === 'info') && (textColor = 'gray');
         (type === 'warn') && (textColor = 'yellow');
         (type === 'error' || type === 'err') && (textColor = 'red');
         console[(type === 'error') ? 'error': 'log'](
@@ -30,7 +30,7 @@ const utils = {
             chalk[textColor]((type === 'error' || type === 'err') ? JSON.stringify(text, null, 4) : text)
         );
         if (process.env.LOG_FOLDER) {
-            let d = (new Date()).toLocaleString("ru", {
+            const d = (new Date()).toLocaleString("ru", {
                 day: 'numeric',
                 weekday: 'short',
                 month: 'long',
@@ -39,10 +39,11 @@ const utils = {
                 minute: 'numeric',
                 second: 'numeric'
             });
+            const message = `${ d } [${ type.toUpperCase() }]   ${ text }\r\n`;
             if (microservices[name]) {
-                fse.appendFile(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, `${ d }   ${ text }\r\n`);
+                fse.appendFile(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, message);
             } else {
-                fse.outputFileSync(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, `${ d }   ${ text }\r\n`);
+                fse.outputFileSync(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, message);
                 microservices[name] = name;
             }
         }

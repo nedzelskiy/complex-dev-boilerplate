@@ -14,7 +14,7 @@ const CONSTANTS = {
     SERVER_BROWSER_RESTARTER__URL:  process.env.SERVER_BROWSER_RESTARTER__URL,
     SERVER_LIVERELOAD_PROXY__URL:   process.env.SERVER_LIVERELOAD_PROXY__URL,
     SERVER_LIVERELOAD_PROXY__PORT:  process.env.SERVER_LIVERELOAD_PROXY__PORT,
-    SERVER_LIVERELOAD_PROXY__COLOR: process.env.SERVER_LIVERELOAD_PROXY__COLOR || 'magentaBright'
+    SERVER_LIVERELOAD_PROXY__COLOR: process.env.SERVER_LIVERELOAD_PROXY__COLOR || 'green'
 };
 
 for (let key in CONSTANTS) {
@@ -68,7 +68,7 @@ http.createServer(function(req, res) {
         },
         (error, response, body) => {
             if (error) {
-                sendConsoleText(error, 'error');
+                sendConsoleText(error, 'warn');
                 return false;
             }
             if (response && response.headers) {

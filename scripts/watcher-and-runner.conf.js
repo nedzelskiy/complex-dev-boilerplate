@@ -59,6 +59,17 @@ const recursive = require("recursive-readdir");
 const imageminOptipng = require('imagemin-optipng');
 const imageminJpegtran = require('imagemin-jpegtran');
 
+
+let localConfigs = {
+    sendConsoleText: (text, type) => {
+        if (type === 'error' || type === 'err') {
+            console.log(`${FILENAME}: Error! ${ JSON.stringify(text, null, 4)}`);
+        } else {
+            console.log(text);
+        }
+    }
+};
+
 const cleanCSSS = new CleanCSS({
     sourceMap: true
 });
@@ -128,7 +139,7 @@ const copyFilesWithFilters = (to, from, options) => {
                 resolve();
             })
             .catch(err => {
-                console.log(`${FILENAME}: Error! ${ JSON.stringify(err, null, 4)}`);
+                localConfigs.sendConsoleText(`Error ${err}`, 'err');
                 imagemin.buffer(file)
                 .then((buffer) => {
                     fse.outputFileSync(to, buffer);
@@ -154,7 +165,7 @@ const copyFilesWithFilters = (to, from, options) => {
             sourceMap: true
         });
         if (res.error) {
-            console.log(`${FILENAME}: Error while trying minify js file ${ fileName }.${ ext}! ${ JSON.stringify(res.error, null, 4)}`);
+            localConfigs.sendConsoleText(`Error while trying minify js file ${ fileName }.${ ext}! ${ JSON.stringify(res.error, null, 4)}` , 'err');
             return Promise.resolve();
         }
         fse.outputFileSync(to, file);
@@ -183,21 +194,21 @@ const copyServerFilesFromSrcToBuild = (fullNamePath) => {
     let promise_ = (fullNamePath) ? copyFileFromServerToBuild(fullNamePath) : copyAllFileFromServerToBuild();
     promise_
     .then((files)=> {
-        console.log(`${FILENAME}: static files copied:\r\n${files.join('\r\n')}`);
+        localConfigs.sendConsoleText(`static files copied to ${ process.env.PWD }/${ CONSTANTS.SERVER__BUILD_FOLDER }:\r\n${ files.join('\r\n') }`);
         exec(`node scripts/request-refresh-browser-script.js`, (error, stdout, stderr) => {
             if (error) {
-                console.log(`${FILENAME}: Error! ${error}`, stdout, stderr);
+                localConfigs.sendConsoleText(`Error! ${ error } ${ stdout } ${ stderr }`, 'err');
             }
         });
     })
     .catch(err => {
-        console.log(`${FILENAME} ERROR: Something went wrong in copyServerFilesFromSrcToBuild` + "\r\n" + JSON.stringify(err, null, 4) + "\r\n");
+        localConfigs.sendConsoleText(`ERROR: Something went wrong in copyServerFilesFromSrcToBuild` + "\r\n" + JSON.stringify(err, null, 4) + "\r\n", 'err');
     });
 };
 
 const deleteFilesInBuildServerFolder = (fullNamePath) => {
     fse.remove(fullNamePath.replace(CONSTANTS.SERVER__SRC_FOLDER, CONSTANTS.SERVER__BUILD_FOLDER)).then(() => {
-        console.log(`${FILENAME}: files deleted! ${fullNamePath.toString()}`);
+        localConfigs.sendConsoleText(`files deleted! ${ fullNamePath.toString() }`);
     });
 };
 
@@ -205,10 +216,10 @@ const makeConfigs = () => {
     return new Promise((resolve, reject) => {
         exec(`node scripts/make-server-configs.js`, (error, stdout, stderr) => {
             if (error) {
-                console.log(`${FILENAME}: Error! ${error}`, stdout, stderr);
+                localConfigs.sendConsoleText(`Error! ${ error } ${ stdout } ${ stderr }`, 'err');
                 reject(error);
             } else {
-                console.log(stdout, stderr);
+                localConfigs.sendConsoleText(`${stdout} ${stderr}`);
                 resolve();
             }
         });
@@ -251,8 +262,8 @@ const restartConcurrentlyWrapperProcess = (strCommand) => {
                 new Promise((resolve, reject) => {
                     terminate(message[cmd].pid, 'SIGKILL', err => {
                         if (err) {
-                            console.log(`${FILENAME} ERROR: Can't terminate process with pid ${message[cmd].pid}. Maybe this process not exist`);
-                            console.log(`${FILENAME} ${JSON.stringify(err, null, 4) }\r\n`);
+                            localConfigs.sendConsoleText(`ERROR: Can't terminate process with pid ${ message[cmd].pid }. Maybe this process not exist`, 'err');
+                            localConfigs.sendConsoleText(`${ JSON.stringify(err, null, 4) }\r\n`, 'err');
                             reject(err);
                         } else {
                             resolve();
@@ -271,7 +282,7 @@ const restartConcurrentlyWrapperProcess = (strCommand) => {
             }
         })
         .catch(err => {
-            console.log(`${FILENAME} ERROR: Something went wrong in restartConcurrentlyWrapperProcess` + "\r\n" + JSON.stringify(err, null, 4) + "\r\n");
+            localConfigs.sendConsoleText(`ERROR: Something went wrong in restartConcurrentlyWrapperProcess` + "\r\n" + JSON.stringify(err, null, 4) + "\r\n", 'err');
             resolve();
         });
     });
@@ -281,17 +292,17 @@ const copyOneFile = (fullNamePathFile, fullPathTo) => {
     const fileName = path.normalize(fullNamePathFile).split(path.sep).pop();
     const file = fs.readFileSync(path.normalize(fullNamePathFile));
     fse.outputFileSync(path.normalize(`${ fullPathTo }/${fileName}`), file);
-    console.log(`${FILENAME}: Copied file ${ fileName } to ${ fullPathTo }`);
+    localConfigs.sendConsoleText(`Copied file "${ fileName }" to ${ fullPathTo }`);
 };
 
 const runServerTests = (fullNamePath) => {
-    console.log(`${FILENAME}: Change detected with ${fullNamePath}`);
-    console.log(`${FILENAME}: run build server script...`);
+    localConfigs.sendConsoleText(`Change detected with ${fullNamePath}`);
+    localConfigs.sendConsoleText(`run build server script...`);
     exec(`node scripts/build-server-script.js`, (error, stdout, stderr) => {
         if (error) {
-            console.log(`${FILENAME} ERROR:  ${error}`, stdout, stderr);
+            localConfigs.sendConsoleText(`ERROR ${error} ${stdout} ${stderr}`, 'err');
         } else {
-            console.log(`${FILENAME}: ${stdout}`, stderr);
+            localConfigs.sendConsoleText(`${stdout} ${stderr}`);
         }
     });
 };
@@ -332,7 +343,9 @@ options[`${ process.env.PWD }/${ CONSTANTS.SERVER__SRC_FOLDER }`] = {
         update: copyServerFilesFromSrcToBuild,
         remove: deleteFilesInBuildServerFolder
     },
-    runImmediately: () => copyServerFilesFromSrcToBuild(),
+    runImmediately: () => {
+        copyServerFilesFromSrcToBuild()
+    },
     filter: function (fullNamePath) {
         try {
             let ext = fullNamePath.split('.').pop().toLowerCase();
@@ -349,7 +362,7 @@ options[`${ process.env.PWD }/${ CONSTANTS.SERVER__SRC_FOLDER }`] = {
             );
         } catch (err) {
             if (err.code.toUpperCase() !== 'ENOENT') {
-                console.log(`${FILENAME} ERR: ${ JSON.stringify(err, null, 4) }`);
+                localConfigs.sendConsoleText(`ERR: ${err}`, 'err');
                 return false;
             }
             return true;
@@ -367,7 +380,7 @@ options[CONSTANTS.SERVER__SRC_TEST_FOLDER] = {
             return /[sS]pec\.[a-zA-Z]+$/.test(fullNamePath) && !fs.statSync(fullNamePath).isDirectory();
         } catch (err) {
             if (err.code.toUpperCase() !== 'ENOENT') {
-                console.log(`${FILENAME} ERR: ${ JSON.stringify(err, null, 4) }`);
+                localConfigs.sendConsoleText(`ERR: ${ err }`, 'err');
                 return false;
             }
             return true;
@@ -381,7 +394,7 @@ options[`${ process.env.PWD }/package.json`] = {
             copyOneFile(fullNamePath, `${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }`);
         },
         remove: (fullNamePath) => {
-            console.log(`\r\n\r\nAttention file ${fullNamePath} was removed!!`)
+            localConfigs.sendConsoleText(`\r\n\r\nAttention file ${fullNamePath} was removed!!`);
         }
     },
     runImmediately: (fullNamePath) => {
@@ -395,7 +408,7 @@ options[`${ process.env.PWD }/process.yml`] = {
             copyOneFile(fullNamePath, `${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }`);
         },
         remove: (fullNamePath) => {
-            console.log(`\r\n\r\nAttention file ${fullNamePath} was removed!!`)
+            localConfigs.sendConsoleText(`\r\n\r\nAttention file ${fullNamePath} was removed!!`);
         }
     },
     runImmediately: (fullNamePath) => {
@@ -404,4 +417,7 @@ options[`${ process.env.PWD }/process.yml`] = {
 };
 
 
-module.exports = options;
+module.exports = {
+    options: options,
+    localConfigs: localConfigs
+};

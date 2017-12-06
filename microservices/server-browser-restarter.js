@@ -9,7 +9,7 @@ const FILENAME = path.basename(__filename).replace(path.extname(path.basename(__
 
 const CONSTANTS = {
     SERVER_BROWSER_RESTARTER__PORT:   process.env.SERVER_BROWSER_RESTARTER__PORT,
-    SERVER_BROWSER_RESTARTER__COLOR:  process.env.SERVER_BROWSER_RESTARTER__COLOR || 'blueBright'
+    SERVER_BROWSER_RESTARTER__COLOR:  process.env.SERVER_BROWSER_RESTARTER__COLOR || 'blue'
 };
 
 for (let key in CONSTANTS) {
@@ -89,7 +89,10 @@ types['browser-refresh'] = () => {
             setTimeout(() => {
                 types['browser-refresh'].promise = null;
             }, 0);
-            isAnySocketsExists ? resolve() : reject('socketToBrowser doesn\'t exists yet!');
+            if (!isAnySocketsExists) {
+                sendConsoleText(`socketToBrowser doesn't exists yet!`, 'warn');
+            }
+            resolve();
         });
     }
     return types['browser-refresh'].promise;

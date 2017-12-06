@@ -5,7 +5,7 @@ const FILENAME = path.basename(__filename).replace(path.extname(path.basename(__
 
 const CONSTANTS = {
     WATCHER_AND_RUNNER__PORT:           process.env.WATCHER_AND_RUNNER__PORT,
-    WATCHER_AND_RUNNER__COLOR:          process.env.WATCHER_AND_RUNNER__COLOR || 'gray',
+    WATCHER_AND_RUNNER__COLOR:          process.env.WATCHER_AND_RUNNER__COLOR || 'magenta',
     WATCHER_AND_RUNNER__WAY_TO_CONFIG:  process.env.WATCHER_AND_RUNNER__WAY_TO_CONFIG
 };
 
@@ -17,15 +17,27 @@ for (let key in CONSTANTS) {
 }
 
 const ctx = {
+    'types': {},
     'name': FILENAME,
     'color': CONSTANTS.WATCHER_AND_RUNNER__COLOR,
     'port': CONSTANTS.WATCHER_AND_RUNNER__PORT,
     'process': process
 };
 
+ctx.types['get-commands'] = () => {
+    return Promise.resolve(`Not specified!`);
+};
+
 let config = null;
+const http = require('http');
+const server = http.createServer();
 const watch = require('node-watch');
+const io = require('socket.io')(server);
 const util = require('./microservices-utils');
+
+server.on('request', util.httpServerHandler.bind(ctx));
+server.listen(CONSTANTS.WATCHER_AND_RUNNER__PORT);
+
 const sendConsoleText = util.sendConsoleText.bind(ctx);
 /*
  * Example structure for options see more for 'node-watch' npm package manual
@@ -55,54 +67,57 @@ try {
 }
 
 let immediatelyTasks = [];
+const options = config.options;
+config.localConfigs.sendConsoleText = sendConsoleText;
+
 try {
-    for (let url in config) {
+    for (let url in options) {
         let watcherOptions = {
             persistent: true,
             recursive: true,
             encoding: 'utf8'
         };
-        if (config[url].includeDir && typeof config[url].includeDir === 'function') {
-            watcherOptions.filters.includeDir = config[url].includeDir;
+        if (options[url].includeDir && typeof options[url].includeDir === 'function') {
+            watcherOptions.filters.includeDir = options[url].includeDir;
         }
-        if (config[url].includeFile && typeof config[url].includeFile === 'function') {
-            watcherOptions.filters.includeFile = config[url].includeFile;
+        if (options[url].includeFile && typeof options[url].includeFile === 'function') {
+            watcherOptions.filters.includeFile = options[url].includeFile;
         }
-        if (config[url].runImmediately && typeof config[url].runImmediately === 'function') {
-            config[url].runImmediately.savedUrl = url;
-            immediatelyTasks.push(config[url].runImmediately);
+        if (options[url].runImmediately && typeof options[url].runImmediately === 'function') {
+            options[url].runImmediately.savedUrl = url;
+            immediatelyTasks.push(options[url].runImmediately);
         }
-        if (!config[url].callbacks.update || typeof config[url].callbacks.update !== 'function' ) {
+        if (!options[url].callbacks.update || typeof options[url].callbacks.update !== 'function' ) {
             throw new Error(`You must define callback for "update" action`);
         }
-        if (!config[url].callbacks.remove || typeof config[url].callbacks.remove !== 'function' ) {
+        if (!options[url].callbacks.remove || typeof options[url].callbacks.remove !== 'function' ) {
             throw new Error(`You must define callback for "remove" action`);
         }
-        if (config[url].options) {
-            watcherOptions = config[url].options;
+        if (options[url].options) {
+            watcherOptions = options[url].options;
         }
-        if (config[url].filter) {
-            watcherOptions.filter = config[url].filter;
+        if (options[url].filter) {
+            watcherOptions.filter = options[url].filter;
         }
         watch(url, watcherOptions, (evt, fullNamePath) => {
             if (evt === 'update') {
                 // on create or modify
                 sendConsoleText(`created or modified file: ${fullNamePath}`);
-                config[url].callbacks.update(fullNamePath);
+                options[url].callbacks.update(fullNamePath);
             }
             if (evt === 'remove') {
                 // on delete
                 sendConsoleText(`removed file: ${fullNamePath}`);
-                config[url].callbacks.remove(fullNamePath);
+                options[url].callbacks.remove(fullNamePath);
             }
         });
     }
+    sendConsoleText(`started on ${CONSTANTS.WATCHER_AND_RUNNER__PORT}`);
     immediatelyTasks.forEach(task => {
         if (typeof task === 'function') {
             task(task.savedUrl);
         }
     });
-    sendConsoleText(`started on ${CONSTANTS.WATCHER_AND_RUNNER__PORT}`);
 } catch(err) {
     sendConsoleText(err, 'err');
 }
