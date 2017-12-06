@@ -16,6 +16,7 @@ branches:
   only:
   - master
 before_deploy:
+  - echo $KEY
   - cd ./build
 deploy:
   provider: heroku
