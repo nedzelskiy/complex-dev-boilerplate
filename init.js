@@ -2,6 +2,7 @@
 
 const fs = require('fs-extra');
 const prompt = require('prompt');
+const execSync = require('child_process').execSync;
 const envFile = fs.readFileSync('sh/env.sh').toString();
 
 let checkParam = [];
@@ -122,6 +123,13 @@ Looks good ? (y/N)
     });
     // fs.outputFileSync('11111111111111.js', file);
     fs.outputFileSync('sh/env.sh', file);
+    fs.mkdirsSync(result.tmpValues.buildFolderName_);
+    if (!fs.pathExistsSync(`${ result.tmpValues.buildFolderName_ }/.git`) && result.tmpValues.prodGit_) {
+        fs.mkdirsSync(`${ result.tmpValues.buildFolderName_ }/.git`);
+        execSync(`cd ${ result.tmpValues.buildFolderName_ } && git remote remove origin`);
+        execSync(`cd ${ result.tmpValues.buildFolderName_ } && git remote add origin ${ result.tmpValues.prodGit_ }`);
+        execSync(`cd ${ result.tmpValues.buildFolderName_ } && git pull origin master`);
+    }
 })
 .catch(err => {
     console.log(JSON.stringify(err, null, 4));
