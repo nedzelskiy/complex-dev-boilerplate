@@ -4,6 +4,7 @@
   "description": "boilerplate for project on typescript node with live reload",
   "main": "build/app.js",
   "scripts": {
+    "init": "node init.js",
     "dev": "sh ./sh/dev.sh",
     "dev:server": "sh ./sh/server.sh",
     "test": "sh ./sh/tests.sh",
@@ -50,6 +51,7 @@
     "node-watch": "^0.5.5",
     "preact": "^8.2.6",
     "preact-compat": "^3.17.0",
+    "prompt": "^1.0.0",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-redux": "^5.0.6",
