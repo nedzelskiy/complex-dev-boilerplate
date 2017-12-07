@@ -4,5 +4,6 @@ node_modules/
 coverage/
 configs/tsconfig-server.json
 configs/tsconfig-client.json
-logs/microservices
-build/
+logs/
+build/*
+!build/.gitkeep
