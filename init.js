@@ -12,6 +12,7 @@ let buildFolderName = '';
 let srcTestFolderName = '';
 let srcClientFolderName = '';
 let srcServerFolderName = '';
+let isAllGood = true;
 
 
 checkParam = /(SERVER__BUILD_FOLDER=["]([^"]+)["]|SERVER__BUILD_FOLDER=[']([^']+)['])/ig.exec(envFile);
@@ -168,6 +169,22 @@ Looks good ? (y/N)
         process.stdout.write(`Executing the command: "${command}" ...\r\n`);
         execSync(command);
         process.stdout.write("OK\r\n");
+
+        process.stdout.write(`Creating pre-push git hook ...`);
+        const hookFile = fs.readFileSync('.git/hooks/pre-push.sample').toString();
+        const hookLines = hookFile.split("\n");
+        if (hookLines[hookLines.length - 1] && !!~hookLines[hookLines.length - 1].indexOf('exit')) {
+            hookLines[hookLines.length - 1] = 'eval `grep "^export " ./sh/env.sh` && node ./scripts/pre-push-hook.js && exit 0';
+            fs.outputFileSync('.git/hooks/pre-push', hookLines.join("\n"));
+            process.stdout.write("OK\r\n");
+        } else  if (hookLines[hookLines.length - 2] && !!~hookLines[hookLines.length - 2].indexOf('exit')) {
+            hookLines[hookLines.length - 2] = 'eval `grep "^export " ./sh/env.sh` && node ./scripts/pre-push-hook.js && exit 0';
+            fs.outputFileSync('.git/hooks/pre-push', hookLines.join("\n"));
+            process.stdout.write("OK\r\n");
+        } else {
+            process.stdout.write("FAIL!\r\n");
+            isAllGood = false;
+        }
     }
     process.stdout.write(`Writing .travis.yml ...`);
     const travisConf = nodeYaml.readSync('.travis.yml');
@@ -186,16 +203,20 @@ Looks good ? (y/N)
 
     process.stdout.write(`Writing .gitignore ...`);
     const gitIgnoreFile = fs.readFileSync('.gitignore').toString();
-    const gitIgnoreConf = gitIgnoreFile.split(endOfLine);
+    const gitIgnoreConf = gitIgnoreFile.split("\n");
     gitIgnoreConf.forEach((line, index) => {
         if (!!~line.indexOf(buildFolderName)) {
             gitIgnoreConf[index] = `${ result.tmpValues.buildFolderName_ }/`;
         }
     });
-    fs.outputFileSync('.gitignore', gitIgnoreConf.join(endOfLine));
+    fs.outputFileSync('.gitignore', gitIgnoreConf.join("\n"));
     process.stdout.write("OK\r\n");
     console.log(`\r\nInitialisation finished!`);
-    console.log(`Now you can run "npm run dev" for start developing!`);
+    if (isAllGood) {
+        console.log(`Now you can run "npm run dev" for start developing!`);
+    } else {
+        console.log(`There are exists some errors. See console from above.`);
+    }
 })
 .catch(err => {
     console.log(JSON.stringify(err, null, 4));
