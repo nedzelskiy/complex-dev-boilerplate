@@ -124,6 +124,7 @@ Looks good ? (y/N)
         process.exit(0);
     }
     let file;
+    process.stdout.write(`Writing sh/env.sh ...`);
     file = envFile.replace(/(SERVER__BUILD_FOLDER=["]([^"]+)["]|SERVER__BUILD_FOLDER=[']([^']+)['])/ig, (a,b,c) => {
         return a.replace(c, result.tmpValues.buildFolderName_);
     });
@@ -137,33 +138,64 @@ Looks good ? (y/N)
         return a.replace(c, result.tmpValues.srcClientFolderName_);
     });
     fs.outputFileSync('sh/env.sh', file);
+    process.stdout.write("OK\r\n");
+
+    process.stdout.write(`Making build folder: "${result.tmpValues.buildFolderName_}" ...`);
     fs.mkdirsSync(result.tmpValues.buildFolderName_);
+    process.stdout.write("OK\r\n");
+
+    let command;
     if (result.tmpValues.prodGit_) {
         if (!fs.pathExistsSync(`${ result.tmpValues.buildFolderName_ }/.git`)) {
-            fs.mkdirsSync(`${ result.tmpValues.buildFolderName_ }/.git`);
+            command = `cd ${ result.tmpValues.buildFolderName_ } && git init`;
+            process.stdout.write(`Executing the command: "${command}" ...`);
+            execSync(command);
+            process.stdout.write("OK\r\n");
         }
-        execSync(`cd ${ result.tmpValues.buildFolderName_ } && git remote remove origin`);
-        execSync(`cd ${ result.tmpValues.buildFolderName_ } && git remote add origin ${ result.tmpValues.prodGit_ }`);
-        execSync(`cd ${ result.tmpValues.buildFolderName_ } && git pull origin master`);
-    }
+        try {
+            command = `cd ${ result.tmpValues.buildFolderName_ } && git remote remove origin`;
+            process.stdout.write(`Executing the command: "${command}" ...`);
+            execSync(command);
+            process.stdout.write("OK\r\n");
+        } catch (err) {}
 
+        command = `cd ${ result.tmpValues.buildFolderName_ } && git remote add origin ${ result.tmpValues.prodGit_ }`;
+        process.stdout.write(`Executing the command: "${command}" ...`);
+        execSync(command);
+        process.stdout.write("OK\r\n");
+
+        command = `cd ${ result.tmpValues.buildFolderName_ } && git pull origin master`;
+        process.stdout.write(`Executing the command: "${command}" ...\r\n`);
+        execSync(command);
+        process.stdout.write("OK\r\n");
+    }
+    process.stdout.write(`Writing .travis.yml ...`);
     const travisConf = nodeYaml.readSync('.travis.yml');
     travisConf['before_script'].forEach((script, index) => {
         if (!!~script.indexOf('git') && !!~script.indexOf('clone') && !!~script.indexOf(buildFolderName)) {
             travisConf['before_script'][index] = `git clone $PRODUCTION_REPOSITORY ${ result.tmpValues.buildFolderName_ }`;
         }
     });
+    travisConf['before_deploy'].forEach((script, index) => {
+        if (!!~script.indexOf('cd') && !!~script.indexOf(buildFolderName)) {
+            travisConf['before_deploy'][index] = `cd ${ result.tmpValues.buildFolderName_ }`;
+        }
+    });
     nodeYaml.writeSync('.travis.yml', travisConf);
+    process.stdout.write("OK\r\n");
 
+    process.stdout.write(`Writing .gitignore ...`);
     const gitIgnoreFile = fs.readFileSync('.gitignore').toString();
     const gitIgnoreConf = gitIgnoreFile.split(endOfLine);
     gitIgnoreConf.forEach((line, index) => {
-        if (!!~line.indexOf('cd')  && !!~line.indexOf(buildFolderName)) {
-            gitIgnoreConf[index] = `cd ${ result.tmpValues.buildFolderName_ }`;
+        if (!!~line.indexOf(buildFolderName)) {
+            gitIgnoreConf[index] = `${ result.tmpValues.buildFolderName_ }/`;
         }
     });
-    fs.outputFileSync('sh/env.sh', gitIgnoreConf.join(endOfLine));
+    fs.outputFileSync('.gitignore', gitIgnoreConf.join(endOfLine));
+    process.stdout.write("OK\r\n");
     console.log(`\r\nInitialisation finished!`);
+    console.log(`Now you can run "npm run dev" for start developing!`);
 })
 .catch(err => {
     console.log(JSON.stringify(err, null, 4));

@@ -14,13 +14,13 @@ before_script:
   - eval `grep "^export " ./sh/env.sh`
 branches:
   only:
-  - master
+    - master
 before_deploy:
-  - cd ./build
+  - cd build
 deploy:
   provider: heroku
   api_key: $HEROKU_KEY
   app: $HEROKU_APP
   run:
-    - "npm install --production"
-    - "npm run prod"
+    - npm install --production
+    - npm run prod
