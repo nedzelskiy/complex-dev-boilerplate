@@ -5,5 +5,4 @@ coverage/
 configs/tsconfig-server.json
 configs/tsconfig-client.json
 logs/
-build/*
-!build/.gitkeep
+build/
