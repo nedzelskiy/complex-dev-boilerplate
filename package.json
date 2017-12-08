@@ -9,7 +9,7 @@
     "dev:server": "sh ./sh/server.sh",
     "test": "sh ./sh/tests.sh",
     "coverage": "sh ./sh/coverage.sh",
-    "prod": "sh ./sh/prod.sh"
+    "prod": "node node_modules/pm2/bin/pm2 start process.yml"
   },
   "repository": {
     "type": "git",
