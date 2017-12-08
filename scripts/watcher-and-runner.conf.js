@@ -63,11 +63,12 @@ const imageminJpegtran = require('imagemin-jpegtran');
 let localConfigs = {
     sendConsoleText: (text, type) => {
         if (type === 'error' || type === 'err') {
-            console.log(`${FILENAME}: Error! ${ JSON.stringify(text, null, 4)}`);
+            console.log(`${FILENAME}: Error sendConsoleText ! ${ JSON.stringify(text, null, 4)}`);
         } else {
             console.log(text);
         }
-    }
+    },
+    logInfo: () => {}
 };
 
 const cleanCSSS = new CleanCSS({
@@ -139,7 +140,8 @@ const copyFilesWithFilters = (to, from, options) => {
                 resolve();
             })
             .catch(err => {
-                localConfigs.sendConsoleText(`Error ${err}`, 'err');
+                localConfigs.sendConsoleText(`Error imagemin: ${err}`, 'err');
+                localConfigs.logInfo(JSON.stringify(err, null, 4), 'error');
                 imagemin.buffer(file)
                 .then((buffer) => {
                     fse.outputFileSync(to, buffer);
@@ -197,7 +199,7 @@ const copyServerFilesFromSrcToBuild = (fullNamePath) => {
         localConfigs.sendConsoleText(`static files copied to ${ process.env.PWD }/${ CONSTANTS.SERVER__BUILD_FOLDER }:\r\n${ files.join('\r\n') }`);
         exec(`node scripts/request-refresh-browser-script.js`, (error, stdout, stderr) => {
             if (error) {
-                localConfigs.sendConsoleText(`Error! ${ error } ${ stdout } ${ stderr }`, 'err');
+                localConfigs.sendConsoleText(`Error copyServerFilesFromSrcToBuild! ${ error } ${ stdout } ${ stderr }`, 'err');
             }
         });
     })
@@ -216,7 +218,7 @@ const makeConfigs = () => {
     return new Promise((resolve, reject) => {
         exec(`node scripts/make-server-configs.js`, (error, stdout, stderr) => {
             if (error) {
-                localConfigs.sendConsoleText(`Error! ${ error } ${ stdout } ${ stderr }`, 'err');
+                localConfigs.sendConsoleText(`Error makeConfigs! ${ error } ${ stdout } ${ stderr }`, 'err');
                 reject(error);
             } else {
                 localConfigs.sendConsoleText(`${stdout} ${stderr}`);

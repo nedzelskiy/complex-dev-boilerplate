@@ -69,6 +69,7 @@ try {
 let immediatelyTasks = [];
 const options = config.options;
 config.localConfigs.sendConsoleText = sendConsoleText;
+config.localConfigs.logInfo = util.logInfo.bind(ctx, FILENAME);
 
 try {
     for (let url in options) {

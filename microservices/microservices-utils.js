@@ -30,22 +30,25 @@ const utils = {
             chalk[textColor]((type === 'error' || type === 'err') ? JSON.stringify(text, null, 4) : text)
         );
         if (process.env.LOG_FOLDER) {
-            const d = (new Date()).toLocaleString("ru", {
-                day: 'numeric',
-                weekday: 'short',
-                month: 'long',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric'
-            });
-            const message = `${ d } [${ type.toUpperCase() }]   ${ text }\r\n`;
-            if (microservices[name]) {
-                fse.appendFile(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, message);
-            } else {
-                fse.outputFileSync(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, message);
-                microservices[name] = name;
-            }
+            utils.logInfo(name, text, type);
+        }
+    },
+    logInfo: function(name, text, type) {
+        const d = (new Date()).toLocaleString("ru", {
+            day: 'numeric',
+            weekday: 'short',
+            month: 'long',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric'
+        });
+        const message = `${ d } [${ type.toUpperCase() }]   ${ text }\r\n`;
+        if (microservices[name]) {
+            fse.appendFile(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, message);
+        } else {
+            fse.outputFileSync(`${ process.env.LOG_FOLDER }/microservices/${name}.log`, message);
+            microservices[name] = name;
         }
     },
     getChalkInstance: function() {
