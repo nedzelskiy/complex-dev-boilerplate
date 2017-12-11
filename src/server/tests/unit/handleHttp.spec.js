@@ -47,7 +47,7 @@ const mockRes = {
     setHeader: (key, value) => {
         mockRes.setHeader[key] = value;
     },
-    setStatus: 200,
+    statusCode: 200,
     end: (str) => {
         if (str) {
             mockRes.body = str.replace(/[\s\t\r\n]+/, ' ');
@@ -79,7 +79,7 @@ describe(`${FILENAME}`, () => {
         handleHttp({
             url: '/'
         }, mockRes);
-        expect(mockRes.setStatus).to.be.equal(200);
+        expect(mockRes.statusCode).to.be.equal(200);
         assert.isTrue(!!~mockRes.body.indexOf('index.ejs'));
         next();
     });
@@ -94,14 +94,14 @@ describe(`${FILENAME}`, () => {
         handleHttp({
             url: '/file.404'
         }, mockRes);
-        expect(mockRes.setStatus).to.be.equal(404);
+        expect(mockRes.statusCode).to.be.equal(404);
         next();
     });
     it(`should allows added static files without hash if couldn't find it` , next => {
         handleHttp({
             url: '/'
         }, mockRes);
-        assert.isTrue(typeof params.jsServerHash === 'undefined');
+        assert.isTrue(params.jsServerHash === 'undefined');
         next();
     });
 });

@@ -81,7 +81,9 @@ http.createServer(function(req, res) {
                 res.statusCode = response.statusCode;
             }
             if (/<html/i.test(body) || /<!DOCTYPE/i.test(body)) {
-                body = body + buildHtmlScript();
+                const preactScriptHtml = `<script> ${ fs.readFileSync('./node_modules/preact/dist/preact.js', 'utf-8') } </script>`;
+                const preactDevToolsScriptHtml = `<script> ${ fs.readFileSync('./node_modules/preact/devtools.js', 'utf-8') } </script>`;
+                body = body + buildHtmlScript() + preactScriptHtml + preactDevToolsScriptHtml;
                 res.setHeader('content-length', body.length);
             } else if (response.headers['content-length']){
                 res.setHeader('content-length', response.headers['content-length']);

@@ -1,20 +1,22 @@
 'use strict';
 
+/// <reference path="/node_modules/@types/webpack-env/index.d.ts" />
+/// <reference path="/node_modules/@types/webpack-env/index.d.ts" />
 import thunk from 'redux-thunk';
-import * as rExt from 'redux-devtools-extension';
+import { composeWithDevTools } from 'redux-devtools-extension';
 import { createStore, applyMiddleware, combineReducers, ReducersMapObject, Reducer } from 'redux';
 
 // dynamic load reducers from components
 let reducers: ReducersMapObject = {};
-const reducersHandler = (v: any) => {
-    let reducer: Reducer<{}> = (req(v) as any)['default'];
+const reducersHandler = (v: string): void => {
+    let reducer: Reducer<{}> = req(v)['default'];
     let reducerName : string = v.split('/')[1];
     reducers[reducerName] = reducer;
 };
 
-let req = (require as any).context('./components/', true, /reducer\.tsx?$/);
+let req = require.context('./components/', true, /reducer\.tsx?$/);
 req.keys().forEach(reducersHandler);
-req = (require as any).context('./containers/', true, /reducer\.tsx?$/);
+req = require.context('./containers/', true, /reducer\.tsx?$/);
 req.keys().forEach(reducersHandler);
 
-export default createStore(combineReducers(reducers), rExt.composeWithDevTools(applyMiddleware(thunk)));
+export default createStore(combineReducers(reducers), composeWithDevTools(applyMiddleware(thunk)));
