@@ -1,5 +1,4 @@
 'use strict';
-/// <reference path="/node_modules/@types/webpack-env/index.d.ts" />
 
 import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';

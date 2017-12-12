@@ -25,13 +25,12 @@ const UnminifiedWebpackPlugin = require('unminified-webpack-plugin');
 
 console.log(`${FILENAME}: webpack config running! PID:[${process.pid}]`);
 
-let output  = path.normalize(__dirname + `/../${CONSTANTS.CLIENT__BUILD_FOLDER}`);
 let config = {
     entry: {
-      "client-bundle" : path.normalize(__dirname + `/../${CONSTANTS.CLIENT__SRC_FOLDER}/client.tsx`)
+      "client-bundle" : path.normalize(`${ process.env.PWD}/${CONSTANTS.CLIENT__SRC_FOLDER}/client.tsx`)
     },
     output: {
-        path: output,
+        path: path.normalize(`${ process.env.PWD}/${CONSTANTS.CLIENT__BUILD_FOLDER}`),
         filename: '[name].min.js',
         library: 'App'
     },
@@ -47,9 +46,9 @@ let config = {
         extensions: [".tsx", ".ts", ".js"],
         modules: [
             "node_modules",
-            path.normalize(__dirname + `/../${CONSTANTS.CLIENT__SRC_FOLDER}/containers/`),
-            path.normalize(__dirname + `/../${CONSTANTS.CLIENT__SRC_FOLDER}/components/`),
-            path.normalize(__dirname + `/../${CONSTANTS.CLIENT__SRC_FOLDER}/`)
+            path.normalize(`${ process.env.PWD}/${CONSTANTS.CLIENT__SRC_FOLDER}/containers/`),
+            path.normalize(`${ process.env.PWD}/${CONSTANTS.CLIENT__SRC_FOLDER}/components/`),
+            path.normalize(`${ process.env.PWD}/${CONSTANTS.CLIENT__SRC_FOLDER}/`)
         ],
     },
     module: {
@@ -59,7 +58,7 @@ let config = {
                 use: {
                     loader: 'ts-loader',
                     options: {
-                        configFile: `../../${CONSTANTS.CONFIGS_SERVICES__DIR}/tsconfig-client.json`
+                        configFile: `${ process.env.PWD}/${CONSTANTS.CONFIGS_SERVICES__DIR}/tsconfig-client.json`
                     }
                 },
                 exclude: /node_modules/

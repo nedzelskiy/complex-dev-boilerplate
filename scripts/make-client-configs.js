@@ -35,35 +35,12 @@ for (let key in CONSTANTS) {
 const fs = require('fs');
 // create tsconfig-client.json
 let tsconfigClient = {
-    "compilerOptions": {
-        "sourceMap": true,
-        "noImplicitAny": true,
-        "moduleResolution": "node",
-        "module": "commonjs",
-        "removeComments": true,
-        "target": "es5",
-        "jsx" :  "react",
-        "allowJs": true,
-        "strictNullChecks": true,
-        "types": [
-            "node"
-        ],
-        "typeRoots": [
-            "../node_modules/@types",
-            "../@types"
-        ],
-        "lib": [
-            "dom",
-            "es2015",
-            "es5",
-            "es6"
-        ]
-    },
+    "extends": `${ process.env.PWD }/tsconfig.json`,
     "include": [
-        `../${ CONSTANTS.CLIENT__SRC_FOLDER }/**/*.ts`
+        `${ process.env.PWD }/${ CONSTANTS.CLIENT__SRC_FOLDER }/**/*`
     ]
 };
 
-fs.writeFileSync(`${CONSTANTS.CONFIGS_SERVICES__DIR}/tsconfig-client.json`, JSON.stringify(tsconfigClient, null, 4));
+fs.writeFileSync(`${ CONSTANTS.CONFIGS_SERVICES__DIR }/tsconfig-client.json`, JSON.stringify(tsconfigClient, null, 4));
 
 console.log(`${FILENAME}: configs created!`);

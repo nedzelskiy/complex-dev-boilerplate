@@ -50,6 +50,7 @@ for (let key in CONSTANTS) {
 const options =  {};
 const fs = require('fs');
 const fse = require('fs-extra');
+const utils = require('./utils');
 const imagemin = require('imagemin');
 const CleanCSS = require('clean-css');
 const UglifyJS = require("uglify-js");
@@ -61,13 +62,7 @@ const imageminJpegtran = require('imagemin-jpegtran');
 
 
 let localConfigs = {
-    sendConsoleText: (text, type) => {
-        if (type === 'error' || type === 'err') {
-            console.log(`${FILENAME}: Error sendConsoleText ! ${ JSON.stringify(text, null, 4)}`);
-        } else {
-            console.log(text);
-        }
-    },
+    sendConsoleText: utils.sendConsoleText,
     logInfo: () => {}
 };
 
@@ -228,15 +223,12 @@ const makeConfigs = () => {
     });
 };
 
-const getTCPResponse = (port, command, commandLine, domen) => {
+const getTCPResponse = (port, message, domen) => {
     let domen_ = domen || 'localhost';
     return new Promise((resolve, reject) => {
         let client = new require('net').Socket();
         client.connect(port, domen_, () => {
-            client.write(JSON.stringify({
-                command: command,
-                commandLine: commandLine
-            }));
+            client.write(JSON.stringify(message));
         });
         client.on('data', data => {
             client.destroy();
@@ -255,37 +247,27 @@ const getTCPResponse = (port, command, commandLine, domen) => {
 
 
 const restartConcurrentlyWrapperProcess = (strCommand) => {
-     new Promise((resolve, reject) => {
-        getTCPResponse(CONSTANTS.CONCURRENTLY_WRAPPER__PORT, 'getActiveProcessList', '')
+     return new Promise((resolve, reject) => {
+        getTCPResponse(CONSTANTS.CONCURRENTLY_WRAPPER__PORT, {
+            'command': '@getActiveProcessList',
+            'commandLine': ''
+        })
         .then(data => {
             let message = JSON.parse(data.toString('utf-8'));
             for (let cmd in message) {
                 if (!~cmd.indexOf(strCommand)) continue;
-                new Promise((resolve, reject) => {
-                    terminate(message[cmd].pid, 'SIGKILL', err => {
-                        if (err) {
-                            localConfigs.sendConsoleText(`ERROR: Can't terminate process with pid ${ message[cmd].pid }. Maybe this process not exist`, 'err');
-                            localConfigs.sendConsoleText(`${ JSON.stringify(err, null, 4) }\r\n`, 'err');
-                            reject(err);
-                        } else {
-                            resolve();
-                        }
-                    });
-                })
-                .then(() => {
-                    getTCPResponse(CONSTANTS.CONCURRENTLY_WRAPPER__PORT, 'add', `add '${cmd}' ${message[cmd].index}`)
-                        .catch(err => {
-                            throw err;
-                        });
-                })
-                .catch(err => {
+                getTCPResponse(CONSTANTS.CONCURRENTLY_WRAPPER__PORT, {
+                    'command': '@restartProcessByPid',
+                    'pid': message[cmd].pid
+                }).catch(err => {
                     throw err;
                 });
             }
+            resolve();
         })
         .catch(err => {
             localConfigs.sendConsoleText(`ERROR: Something went wrong in restartConcurrentlyWrapperProcess` + "\r\n" + JSON.stringify(err, null, 4) + "\r\n", 'err');
-            resolve();
+            reject(err);
         });
     });
 };
@@ -315,8 +297,8 @@ options['scripts/make-server-configs.js'] = {
         update: () => {
             restartConcurrentlyWrapperProcess('ts-server');
         },
-        remove: () => {
-            restartConcurrentlyWrapperProcess('ts-server');
+        remove: (fullNamePath) => {
+            localConfigs.sendConsoleText(`\r\n\r\nAttention file ${fullNamePath} was removed!!`);
         }
     }
 };
@@ -325,8 +307,8 @@ options['scripts/make-client-configs.js'] = {
         update: () => {
             restartConcurrentlyWrapperProcess('webpack-client');
         },
-        remove: () => {
-            restartConcurrentlyWrapperProcess('webpack-client');
+        remove: (fullNamePath) => {
+            localConfigs.sendConsoleText(`\r\n\r\nAttention file ${fullNamePath} was removed!!`);
         }
     }
 };
@@ -335,8 +317,8 @@ options[`${CONSTANTS.CONFIGS_SERVICES__DIR}/webpack-client.conf.js`] = {
         update: () => {
             restartConcurrentlyWrapperProcess('webpack-client');
         },
-        remove: () => {
-            restartConcurrentlyWrapperProcess('webpack-client');
+        remove: (fullNamePath) => {
+            localConfigs.sendConsoleText(`\r\n\r\nAttention file ${fullNamePath} was removed!!`);
         }
     }
 };
@@ -372,7 +354,7 @@ options[`${ process.env.PWD }/${ CONSTANTS.SERVER__SRC_FOLDER }`] = {
     }
 };
 
-options[CONSTANTS.SERVER__SRC_TEST_FOLDER] = {
+options[`${ process.env.PWD }/${ CONSTANTS.SERVER__SRC_TEST_FOLDER }`] = {
     callbacks: {
         update: runServerTests,
         remove: runServerTests,
@@ -415,6 +397,31 @@ options[`${ process.env.PWD }/process.yml`] = {
     },
     runImmediately: (fullNamePath) => {
         copyOneFile(fullNamePath, `${process.env.PWD}/${ CONSTANTS.SERVER__BUILD_FOLDER }`);
+    }
+};
+
+options[`${ process.env.PWD }/tsconfig.json`] = {
+    callbacks: {
+        update: (fullNamePath) => {
+            restartConcurrentlyWrapperProcess('webpack-client')
+            .then(() => {
+                restartConcurrentlyWrapperProcess('ts-server');
+            });
+        },
+        remove: (fullNamePath) => {
+            localConfigs.sendConsoleText(`\r\n\r\nAttention file ${fullNamePath} was removed!!`);
+        }
+    }
+};
+
+options[__filename] = {
+    callbacks: {
+        update: (fullNamePath) => {
+            restartConcurrentlyWrapperProcess('watcher-and-runner');
+        },
+        remove: (fullNamePath) => {
+            localConfigs.sendConsoleText(`\r\n\r\nAttention file ${fullNamePath} was removed!!`);
+        }
     }
 };
 

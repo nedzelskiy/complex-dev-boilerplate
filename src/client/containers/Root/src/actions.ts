@@ -2,11 +2,10 @@
 
 import { IAction } from './reducer'
 
-export interface IDispatch {
+interface IDispatch {
     (param: IAction): void;
 }
 
-export const getCurrentDate = () => {
-    let dispatch: IDispatch = this.dispatch;
-    dispatch({ type: 'GET_CURRENT_DATE'});
+export const getCurrentDate: Function = (): Function => (dispatch: IDispatch): void => {
+    dispatch({type: "GET_CURRENT_DATE"});
 };

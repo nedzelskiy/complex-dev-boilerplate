@@ -2,16 +2,14 @@
 
 import './styles.scss';
 import * as React from 'react';
-import { connect } from 'react-redux';
+import { connect} from 'react-redux';
 import { getCurrentDate } from './actions';
-import Counter from 'Counter/src';
-import { Dispatch } from 'redux';
-import { bindActionCreators, ActionCreator } from 'redux';
+import Counter from 'components/Counter/src';
 
 
 export class Root extends React.Component<any, any> {
     render() {
-        let { message,date } = this.props;
+        let { message,date, getCurrentDate } = this.props;
         return (
             <div className={ this.constructor.name }>
                 <img src="assets/react.png" />
@@ -23,13 +21,13 @@ export class Root extends React.Component<any, any> {
     }
 }
 
-const mapDispatchToProps = (dispatch: any) => ({
-    getCurrentDate: getCurrentDate
-});
+const mapDispatchToProps = {
+    getCurrentDate
+};
 
 const mapStateToProps = (state: any) => ({
     message: 'And this is a counter for React boilerplate presentation!',
     date: state.Root,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Root);
+export default connect<any,any,any>(mapStateToProps, mapDispatchToProps)(Root);

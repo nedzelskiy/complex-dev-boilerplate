@@ -18,13 +18,32 @@ process.on('uncaughtException', (err) => {
 });
 
 const net = require('net');
+const utils = require('./utils');
 const parse = require('shell-quote').parse;
 
 const server = net.createServer(function(socket) {
     socket.on('data', (data) => {
         let message = JSON.parse(data.toString('utf-8'));
-        if (message && message.command && 'getActiveProcessList' === message.command) {
+        if (message && message.command && '@getActiveProcessList' === message.command) {
             socket.write(JSON.stringify(getActiveProcessList()));
+        } else if (message && message.command && '@restartProcessByPid' === message.command && message.pid) {
+            if (childrenInfoKeeper && childrenInfoKeeper[message.pid] && childrenInfoKeeper[message.pid].command) {
+                setTimeout(() => {
+                    availableCommands['k'].run(message.pid)
+                    .then(() => {
+                        availableCommands['add'].run(
+                            `'${ childrenInfoKeeper[message.pid].command }'`,
+                            childrenInfoKeeper[message.pid].index ? childrenInfoKeeper[message.pid].index : null
+                        );
+                    })
+                    .catch(err => {
+                        console.log(`${FILENAME}: ERROR`, `${ JSON.stringify(err, null, 4) }\r\n`, err);
+                    });
+                }, 0);
+                socket.write('OK!');
+            } else {
+                console.log(`${FILENAME} ERROR: Can't find process with pid ${message.pid} for "@restartProcessByPid" command`);
+            }
         } else if (message && message.command && message.commandLine && availableCommands[message.command]) {
             availableCommands[message.command].run.apply(null, parse(message.commandLine).slice(1));
             socket.write('OK!');
@@ -166,30 +185,47 @@ const getActiveProcessList = () => {
 };
 
 const availableCommands = {
+    'k':{
+        run: function(pid, signal) {
+            let signal_ = signal || 'SIGKILL';
+            return new Promise((resolve, reject) => {
+                terminate(pid, signal_, err => {
+                    if (err) {
+                        console.log(`${FILENAME} ERROR: Can't terminate process ${ pid } with signal ${ signal_ }. Maybe this process already died!`);
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+
+            });
+        },
+        usage: 'k [PID [SIGNAL]] <> kill concurrently task by pid with signal'
+    },
     'r': {
         run: function(pid) {
             if (!pid || !/^\d+$/.test(pid)) {
                 console.log(`${FILENAME} ERROR: Wrong argument pid for command r - restart by pid, type "help" command`);
                 return false;
             }
-            terminate(pid, err => {
-                if (err) {
-                    console.log(`${FILENAME} ERROR: Can't terminate process ${pid}. Maybe this process already died!`);
+            availableCommands['k'].run(pid, 'SIGTERM')
+            .then(() => {
+                if (
+                    'undefined' !== typeof childrenInfoKeeper
+                    && 'undefined' !== typeof childrenInfoKeeper[pid]
+                    && 'undefined' !== typeof childrenInfoKeeper[pid].index
+                    && 'undefined' !== typeof childrenInfoKeeper[pid].command
+                ) {
+                    run([childrenInfoKeeper[pid].command], childrenInfoKeeper[pid].index);
                 } else {
-                    if (
-                           'undefined' !== typeof childrenInfoKeeper
-                        && 'undefined' !== typeof childrenInfoKeeper[pid]
-                        && 'undefined' !== typeof childrenInfoKeeper[pid].index
-                        && 'undefined' !== typeof childrenInfoKeeper[pid].command
-                    ) {
-                        run([childrenInfoKeeper[pid].command], childrenInfoKeeper[pid].index);
-                    } else {
-                        console.log(`${FILENAME} ERROR: Can't restart command by pid "${pid}", maybe this process already died!`);
-                        if ('undefined' !== typeof childrenInfoKeeper[pid]) {
-                            delete childrenInfoKeeper[pid];
-                        }
+                    console.log(`${FILENAME} ERROR: Can't restart command by pid "${pid}", maybe this process already died!`);
+                    if ('undefined' !== typeof childrenInfoKeeper[pid]) {
+                        delete childrenInfoKeeper[pid];
                     }
                 }
+            })
+            .catch(err => {
+                console.log(`${FILENAME} ERROR: ${ JSON.stringify(err, null, 4) }`, err);
             });
         },
         usage: 'r [PID] <> restart concurrently task by pid'

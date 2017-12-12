@@ -35,29 +35,14 @@ for (let key in CONSTANTS) {
 const fs = require('fs');
 // create tsconfig-server.json
 let tsconfigServer = {
+    "extends": `${ process.env.PWD }/tsconfig.json`,
     "compilerOptions": {
-        "noImplicitAny": true,
         "moduleResolution": "node",
-        "module": "commonjs",
-        "removeComments": true,
         "target": "es6",
-        "allowJs": true,
-        "outDir": `../${CONSTANTS.SERVER__BUILD_FOLDER}`,
-        "sourceMap": true,
-        "strictNullChecks": true,
-        "typeRoots": [
-            "../node_modules/@types",
-            "../@types"
-        ],
-        "lib": [
-            "dom",
-            "es2015",
-            "es5",
-            "es6"
-        ]
+        "outDir": `${ process.env.PWD }/${CONSTANTS.SERVER__BUILD_FOLDER}`,
     },
     "include": [
-        `../${ CONSTANTS.SERVER__SRC_FOLDER }/**/*.ts`
+        `${ process.env.PWD }/${ CONSTANTS.SERVER__SRC_FOLDER }/**/*`
     ]
 };
 

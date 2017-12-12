@@ -1,10 +1,4 @@
 declare module 'md5-file' {
-
-    interface Imd5File {
-        sync: any;
-    }
-
-    var md5File: Imd5File;
-
-    export = md5File;
+    export function sync(filename: string): string;
+    export function md5File(filename: string, cb: (err: Error, data: string)=>void):void;
 }
