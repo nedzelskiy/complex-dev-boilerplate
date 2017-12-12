@@ -27,11 +27,19 @@ if (lastCurrentHash === lastRemoteHash) {
     process.exit(0);
 }
 
+process.stdout.write(`Getting last commit message ...`);
 let historyMessage =  `[${ lastCurrentHash.substr(0,6) }] ${ execSync(`git log -1 --pretty=%B`).toString() }`;
+process.stdout.write("OK\r\n");
+
+process.stdout.write(`Incrementing version in ${ CONSTANTS.SERVER__BUILD_FOLDER }/version.manifest ...`);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && echo ${ (new Date()).getTime() } > version.manifest `);
+process.stdout.write("OK\r\n");
+
+process.stdout.write(`Commiting and pushing all build files from ${ CONSTANTS.SERVER__BUILD_FOLDER } to build repository:`);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git add . `);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git commit -m "${ historyMessage }"`);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git pull origin master -s recursive -X ours`);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git push origin master`);
+process.stdout.write("Commited and pushed successful!\r\n\r\n");
 
 process.exit(0);
