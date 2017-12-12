@@ -35,7 +35,7 @@ process.stdout.write(`Incrementing version in ${ CONSTANTS.SERVER__BUILD_FOLDER 
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && echo ${ (new Date()).getTime() } > version.manifest `);
 process.stdout.write("OK\r\n");
 
-process.stdout.write(`Commiting and pushing all build files from ${ CONSTANTS.SERVER__BUILD_FOLDER } to build repository:`);
+process.stdout.write(`Commiting and pushing all build files from "${ CONSTANTS.SERVER__BUILD_FOLDER }" folder to production repository:\r\n`);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git add . `);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git commit -m "${ historyMessage }"`);
 execSync(`cd ${ CONSTANTS.SERVER__BUILD_FOLDER } && git pull origin master -s recursive -X ours`);
