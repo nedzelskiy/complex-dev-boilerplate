@@ -1,27 +1,31 @@
 {
-  "compilerOptions": {
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "module": "commonjs",
-    "removeComments": true,
-    "target": "es5",
-    "jsx": "react",
-    "allowJs": true,
-    "strictNullChecks": true,
-    "baseUrl": ".",
-    "paths": {
-      "components/*": [ "src/client/components/*" ],
-      "containers/*": [ "src/client/containers/*" ]
-    },
-    "lib": [
-      "dom",
-      "es2015",
-      "es5",
-      "es6"
-    ],
-    "typeRoots": [
-      "node_modules/@types",
-      "@types"
-    ]
-  }
+    "compilerOptions": {
+        "sourceMap": true,
+        "noImplicitAny": true,
+        "module": "commonjs",
+        "removeComments": true,
+        "target": "es5",
+        "jsx": "react",
+        "allowJs": true,
+        "strictNullChecks": true,
+        "baseUrl": ".",
+        "paths": {
+            "components/*": [
+                "src/client/components/*"
+            ],
+            "containers/*": [
+                "src/client/containers/*"
+            ]
+        },
+        "lib": [
+            "dom",
+            "es2015",
+            "es5",
+            "es6"
+        ],
+        "typeRoots": [
+            "node_modules/@types",
+            "@types"
+        ]
+    }
 }

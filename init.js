@@ -166,9 +166,9 @@ Looks good ? (y/N)
         process.stdout.write("OK\r\n");
 
         command = `cd ${ result.tmpValues.buildFolderName_ } && git pull origin master`;
-        process.stdout.write(`Executing the command: "${command}" ...\r\n`);
+        process.stdout.write(`Executing the command: "${command}":\r\n`);
         execSync(command);
-        process.stdout.write("OK\r\n");
+        process.stdout.write(`Executing the command: "${command}": ...OK\r\n`);
 
         process.stdout.write(`Creating pre-push git hook ...`);
         const hookFile = fs.readFileSync('.git/hooks/pre-push.sample').toString();
@@ -211,6 +211,23 @@ Looks good ? (y/N)
     });
     fs.outputFileSync('.gitignore', gitIgnoreConf.join("\n"));
     process.stdout.write("OK\r\n");
+
+    process.stdout.write(`Writing tsconfig.json ...`);
+    const tsConfig = JSON.parse(fs.readFileSync('tsconfig.json'));
+    for (let key in tsConfig.compilerOptions.paths) {
+        if (!!~key.indexOf('components')) {
+            tsConfig.compilerOptions.paths[key] = [
+                `${ srcClientFolderName }/components/*`
+            ];
+        } else if (!!~key.indexOf('containers')) {
+            tsConfig.compilerOptions.paths[key] = [
+                `${ srcClientFolderName }/containers/*`
+            ];
+        }
+    }
+    fs.outputFileSync('tsconfig.json', JSON.stringify(tsConfig, null, 4));
+    process.stdout.write("OK\r\n");
+
     console.log(`\r\nInitialisation finished!`);
     if (isAllGood) {
         console.log(`Now you can run "npm run dev" for start developing!`);
