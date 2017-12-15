@@ -6,6 +6,7 @@ import { createStore, applyMiddleware, combineReducers, ReducersMapObject, Reduc
 
 // dynamic load reducers from components
 let reducers: ReducersMapObject = {};
+
 const reducersHandler = (v: string): void => {
     let reducer: Reducer<{}> = req(v)['default'];
     let reducerName : string = v.split('/')[1];

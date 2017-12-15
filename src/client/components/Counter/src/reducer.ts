@@ -1,16 +1,40 @@
 'use strict';
 
 export interface IAction {
-    readonly type: 'INCREMENT' | 'DECREMENT';
+    readonly type: 'INCREMENT' | 'DECREMENT' | 'INCREMENT_ASYNC' | 'DECREMENT_ASYNC';
 }
 
-const initialState = 0;
+export interface IState {
+    value: number,
+    asyncTasks: number
+}
 
-export default (state = initialState, action: any) => {
+const initialState = {
+    value: 0,
+    asyncTasks: 0
+};
+
+export default (state = initialState, action: IAction): any => {
     if (action.type === 'INCREMENT') {
-        return state + 1;
+        return {
+            ...state,
+            value: state.value + 1
+        };
     } else if (action.type === 'DECREMENT') {
-        return state - 1;
+        return {
+            ...state,
+            value: state.value - 1
+        };
+    } else if (action.type === 'INCREMENT_ASYNC') {
+        return {
+            ...state,
+            asyncTasks: state.asyncTasks + 1
+        };
+    } else if (action.type === 'DECREMENT_ASYNC') {
+        return {
+            ...state,
+            asyncTasks: state.asyncTasks - 1
+        };
     }
     return state;
 };
